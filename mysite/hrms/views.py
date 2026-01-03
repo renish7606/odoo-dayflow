@@ -9,6 +9,15 @@ from django.db.models import Q, Count
 from datetime import datetime, timedelta
 from .models import CustomUser, Profile, Attendance, LeaveRequest, Payroll
 from .forms import SignUpForm, SignInForm, ProfileUpdateForm, AdminProfileUpdateForm, LeaveRequestForm
+#-------------------------------------
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+from .forms import SignUpForm
+from .models import CustomUser
 
 
 # ============== Helper Functions ==============
@@ -25,51 +34,124 @@ def is_employee(user):
 
 # ============== Authentication Views ==============
 
+# def signup_view(request):
+#     """User registration with email verification"""
+#     if request.user.is_authenticated:
+#         return redirect('employee_dashboard' if request.user.role == 'EMPLOYEE' else 'admin_dashboard')
+    
+#     if request.method == 'POST':
+#         form = SignUpForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.is_active = True  # User can login, but email not verified
+#             user.save()
+            
+#             # Generate verification token
+#             token = user.generate_verification_token()
+            
+#             # Create profile and default payroll
+#             # Profile.objects.create(
+#             #     user=user,
+#             #     designation='Not Assigned',
+#             #     department='Not Assigned'
+#             # )
+#             # Payroll.objects.create(
+#             #     user=user,
+#             #     basic_salary=0.00
+#             # )
+#             # Profile create safely
+#             profile, created = Profile.objects.get_or_create(
+#                 user=user,
+#                 defaults={
+#                     'designation': 'Not Assigned',
+#                     'department': 'Not Assigned',
+#                 }
+#             )
+
+#             # Payroll create safely
+#             payroll, created = Payroll.objects.get_or_create(
+#                 user=user,
+#                 defaults={'basic_salary': 0.0}
+#             )
+
+#             # Send verification email
+#             verification_url = request.build_absolute_uri(
+#                 reverse('verify_email', kwargs={'token': token})
+#             )
+#             send_mail(
+#                 subject='Verify your Dayflow account',
+#                 message=f'Hello {user.first_name},\n\nPlease click the link below to verify your email:\n{verification_url}\n\nThank you!',
+#                 from_email='noreply@dayflow.com',
+#                 recipient_list=[user.email],
+#                 fail_silently=False,
+#             )
+            
+#             messages.success(request, 'Account created successfully! Please check your email to verify your account.')
+#             return redirect('signin')
+#     else:
+#         form = SignUpForm()
+    
+#     return render(request, 'hrms/auth/signup.html', {'form': form})
+
+
 def signup_view(request):
-    """User registration with email verification"""
+    """User registration with email verification, safe Profile and Payroll creation"""
     if request.user.is_authenticated:
         return redirect('employee_dashboard' if request.user.role == 'EMPLOYEE' else 'admin_dashboard')
     
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
+            # Save user as inactive until email verification
             user = form.save(commit=False)
-            user.is_active = True  # User can login, but email not verified
+            user.is_active = False
             user.save()
-            
-            # Generate verification token
-            token = user.generate_verification_token()
-            
-            # Create profile and default payroll
-            Profile.objects.create(
+
+            # Create Profile safely (avoid UNIQUE constraint error)
+            profile, created = Profile.objects.get_or_create(
                 user=user,
-                designation='Not Assigned',
-                department='Not Assigned'
+                defaults={
+                    'designation': 'Not Assigned',
+                    'department': 'Not Assigned',
+                }
             )
-            Payroll.objects.create(
+
+            # Create Payroll safely
+            payroll, created = Payroll.objects.get_or_create(
                 user=user,
-                basic_salary=0.00
+                defaults={'basic_salary': 0.0}
             )
-            
+
+            # Generate email verification token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            current_site = get_current_site(request)
+
+            # Build verification URL
+            verification_url = f"http://{current_site.domain}{reverse('activate', kwargs={'uidb64': uid, 'token': token})}"
+
             # Send verification email
-            verification_url = request.build_absolute_uri(
-                reverse('verify_email', kwargs={'token': token})
-            )
-            send_mail(
-                subject='Verify your Dayflow account',
-                message=f'Hello {user.first_name},\n\nPlease click the link below to verify your email:\n{verification_url}\n\nThank you!',
-                from_email='noreply@dayflow.com',
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
-            
-            messages.success(request, 'Account created successfully! Please check your email to verify your account.')
+            mail_subject = 'Activate your Dayflow HRMS Account'
+            message = f"""
+Hello {user.first_name},
+
+Thank you for registering at Dayflow HRMS!
+
+Please click the link below to activate your account:
+
+{verification_url}
+
+If you did not register, please ignore this email.
+"""
+            email = EmailMessage(mail_subject, message, to=[user.email])
+            email.send(fail_silently=False)
+
+            messages.success(request, 'Account created successfully! Please check your email to activate your account.')
             return redirect('signin')
     else:
         form = SignUpForm()
     
     return render(request, 'hrms/auth/signup.html', {'form': form})
-
 
 def verify_email(request, token):
     """Verify user email"""
@@ -84,6 +166,22 @@ def verify_email(request, token):
     
     return redirect('signin')
 
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = CustomUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.email_verified = True
+        user.save()
+        messages.success(request, 'Your account is activated! You can now sign in.')
+        return redirect('signin')
+    else:
+        messages.error(request, 'Activation link is invalid or expired.')
+        return render(request, 'hrms/activation_failed.html')
 
 def signin_view(request):
     """User sign-in with role-based redirection"""
@@ -491,3 +589,53 @@ def admin_salary_update(request, employee_id):
     }
     
     return render(request, 'hrms/admin/salary_update.html', context)
+
+#email verification 
+# def signup(request):
+#     if request.method == 'POST':
+#         form = SignUpForm(request.POST)
+#         if form.is_valid():
+#             user = form.save(commit=False)
+#             user.is_active = False  # Inactive until email verification
+#             user.save()
+
+#             # Generate token for verification
+#             token = default_token_generator.make_token(user)
+#             uid = urlsafe_base64_encode(force_bytes(user.pk))
+#             current_site = get_current_site(request)
+
+#             mail_subject = 'Activate your Dayflow HRMS Account'
+#             message = render_to_string('hrms/activate_account.html', {
+#                 'user': user,
+#                 'domain': current_site.domain,
+#                 'uid': uid,
+#                 'token': token,
+#             })
+#             email = EmailMessage(mail_subject, message, to=[user.email])
+#             email.send()
+
+#             messages.success(request, 'Account created! Check your email to activate your account.')
+#             return redirect('hrms:signup')
+#     else:
+#         form = SignUpForm()
+
+#     return render(request, 'hrms/auth/signup.html', {'form': form})
+
+
+# def activate(request, uidb64, token):
+#     try:
+#         uid = force_str(urlsafe_base64_decode(uidb64))
+#         user = CustomUser.objects.get(pk=uid)
+#     except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+#         user = None
+
+#     if user and default_token_generator.check_token(user, token):
+#         user.is_active = True
+#         user.email_verified = True
+#         user.save()
+#         messages.success(request, 'Your account is activated! You can now log in.')
+#         return redirect('signin')
+#     else:
+#         messages.error(request, 'Activation link is invalid or expired!')
+#         return render(request, 'hrms/activation_failed.html')
+# Generate token

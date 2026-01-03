@@ -1,12 +1,15 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
     # Authentication URLs
     path('signup/', views.signup_view, name='signup'),
+    path('activate/<uidb64>/<token>/', views.activate, name='activate'),
+    #path('signup/', views.signup_view, name='signup'),
     path('signin/', views.signin_view, name='signin'),
     path('signout/', views.signout_view, name='signout'),
-    path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
+    #path('verify-email/<str:token>/', views.verify_email, name='verify_email'),
     
     # Employee URLs
     path('', views.employee_dashboard, name='employee_dashboard'),

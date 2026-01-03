@@ -5,10 +5,12 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils import timezone
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Sum, Avg
+from django.http import HttpResponse
 from datetime import datetime, timedelta
 from .models import CustomUser, Profile, Attendance, LeaveRequest, Payroll
 from .forms import SignUpForm, SignInForm, ProfileUpdateForm, AdminProfileUpdateForm, LeaveRequestForm
+from .utils import generate_salary_slip_pdf
 
 
 # ============== Helper Functions ==============
@@ -490,3 +492,213 @@ def admin_salary_update(request, employee_id):
     }
     
     return render(request, 'hrms/admin/salary_update.html', context)
+
+
+# ============== Enhanced Payroll Views ==============
+
+@login_required
+@user_passes_test(is_employee, login_url='admin_dashboard')
+def download_salary_slip(request, payroll_id):
+    """Download salary slip as PDF"""
+    payroll = get_object_or_404(Payroll, id=payroll_id, user=request.user)
+    
+    # Get month and year from query params or use current
+    month = request.GET.get('month', timezone.now().month)
+    year = request.GET.get('year', timezone.now().year)
+    
+    try:
+        month = int(month)
+        year = int(year)
+    except (ValueError, TypeError):
+        month = timezone.now().month
+        year = timezone.now().year
+    
+    # Generate PDF
+    pdf = generate_salary_slip_pdf(payroll, month, year)
+    
+    # Create HTTP response with PDF
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f'salary_slip_{request.user.employee_id}_{year}_{month:02d}.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
+
+
+@login_required
+@user_passes_test(is_admin, login_url='employee_dashboard')
+def admin_download_salary_slip(request, payroll_id):
+    """Admin can download any employee's salary slip"""
+    payroll = get_object_or_404(Payroll, id=payroll_id)
+    
+    # Get month and year from query params or use current
+    month = request.GET.get('month', timezone.now().month)
+    year = request.GET.get('year', timezone.now().year)
+    
+    try:
+        month = int(month)
+        year = int(year)
+    except (ValueError, TypeError):
+        month = timezone.now().month
+        year = timezone.now().year
+    
+    # Generate PDF
+    pdf = generate_salary_slip_pdf(payroll, month, year)
+    
+    # Create HTTP response with PDF
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f'salary_slip_{payroll.user.employee_id}_{year}_{month:02d}.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
+
+
+# ============== Enhanced Attendance Views ==============
+
+@login_required
+@user_passes_test(is_employee, login_url='admin_dashboard')
+def attendance_monthly_view(request):
+    """View monthly attendance with aggregation"""
+    user = request.user
+    today = timezone.now().date()
+    
+    # Get month and year from query params or use current
+    month = request.GET.get('month', today.month)
+    year = request.GET.get('year', today.year)
+    
+    try:
+        month = int(month)
+        year = int(year)
+    except (ValueError, TypeError):
+        month = today.month
+        year = today.year
+    
+    # Get month's attendance
+    from calendar import monthrange
+    _, last_day = monthrange(year, month)
+    month_start = datetime(year, month, 1).date()
+    month_end = datetime(year, month, last_day).date()
+    
+    monthly_attendance = Attendance.objects.filter(
+        user=user,
+        date__range=[month_start, month_end]
+    ).order_by('date')
+    
+    # Calculate statistics
+    present_count = monthly_attendance.filter(status='PRESENT').count()
+    half_day_count = monthly_attendance.filter(status='HALF_DAY').count()
+    absent_count = monthly_attendance.filter(status='ABSENT').count()
+    total_hours = monthly_attendance.aggregate(Sum('total_hours'))['total_hours__sum'] or 0
+    
+    # Get approved leaves for this month
+    approved_leaves = LeaveRequest.objects.filter(
+        user=user,
+        status='APPROVED',
+        start_date__lte=month_end,
+        end_date__gte=month_start
+    )
+    
+    context = {
+        'monthly_attendance': monthly_attendance,
+        'month': month,
+        'year': year,
+        'month_name': datetime(year, month, 1).strftime('%B'),
+        'present_count': present_count,
+        'half_day_count': half_day_count,
+        'absent_count': absent_count,
+        'total_hours': total_hours,
+        'approved_leaves': approved_leaves,
+    }
+    
+    return render(request, 'hrms/employee/attendance_monthly.html', context)
+
+
+@login_required
+@user_passes_test(is_admin, login_url='employee_dashboard')
+def admin_attendance_summary(request):
+    """Admin view for attendance summary with aggregation"""
+    today = timezone.now().date()
+    
+    # Get date range from query params
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    employee_id = request.GET.get('employee', '')
+    
+    # Default to current month if no dates provided
+    if not date_from:
+        date_from = today.replace(day=1)
+    else:
+        date_from = datetime.strptime(date_from, '%Y-%m-%d').date()
+    
+    if not date_to:
+        from calendar import monthrange
+        _, last_day = monthrange(today.year, today.month)
+        date_to = today.replace(day=last_day)
+    else:
+        date_to = datetime.strptime(date_to, '%Y-%m-%d').date()
+    
+    # Get attendance records
+    attendance_records = Attendance.objects.filter(
+        date__range=[date_from, date_to]
+    ).select_related('user')
+    
+    if employee_id:
+        attendance_records = attendance_records.filter(user_id=employee_id)
+    
+    # Calculate aggregated statistics per employee
+    employee_stats = attendance_records.values('user__id', 'user__employee_id', 'user__first_name', 'user__last_name').annotate(
+        total_days=Count('id'),
+        present_days=Count('id', filter=Q(status='PRESENT')),
+        half_days=Count('id', filter=Q(status='HALF_DAY')),
+        absent_days=Count('id', filter=Q(status='ABSENT')),
+        total_hours=Sum('total_hours')
+    )
+    
+    # Get all employees for filter
+    employees = CustomUser.objects.filter(role='EMPLOYEE')
+    
+    context = {
+        'attendance_records': attendance_records,
+        'employee_stats': employee_stats,
+        'employees': employees,
+        'date_from': date_from,
+        'date_to': date_to,
+        'selected_employee': employee_id,
+    }
+    
+    return render(request, 'hrms/admin/attendance_summary.html', context)
+
+
+# ============== Helper Function for Leave Auto-Marking ==============
+
+def mark_leave_attendance():
+    """
+    Auto-mark attendance as 'LEAVE' for approved leave requests.
+    This should be called daily (e.g., via a cron job or management command).
+    """
+    today = timezone.now().date()
+    
+    # Get all approved leaves that cover today
+    approved_leaves = LeaveRequest.objects.filter(
+        status='APPROVED',
+        start_date__lte=today,
+        end_date__gte=today
+    )
+    
+    for leave in approved_leaves:
+        # Create or update attendance record
+        attendance, created = Attendance.objects.get_or_create(
+            user=leave.user,
+            date=today,
+            defaults={
+                'status': 'ABSENT',  # Mark as absent initially
+                'notes': f'On {leave.get_leave_type_display()} leave'
+            }
+        )
+        
+        # If no check-in, mark as leave
+        if not attendance.check_in_time:
+            attendance.status = 'ABSENT'
+            attendance.notes = f'On {leave.get_leave_type_display()} leave'
+            attendance.save()
+    
+    return len(approved_leaves)

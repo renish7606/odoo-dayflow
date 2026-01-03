@@ -16,6 +16,12 @@
             <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin-top: var(--spacing-sm);">
                 Effective from {{ latest_payroll.effective_date|date:"F d, Y" }}
             </p>
+            <div style="margin-top: var(--spacing-lg);">
+                <a href="{% url 'download_salary_slip' latest_payroll.id %}" class="btn btn-outline"
+                    style="background: white; color: var(--primary); border: none;">
+                    📄 Download Salary Slip (PDF)
+                </a>
+            </div>
         </div>
     </div>
 
@@ -49,7 +55,8 @@
                 <div class="d-flex justify-between"
                     style="padding-top: var(--spacing-md); border-top: 2px solid var(--success);">
                     <span class="fw-bold text-success">Gross Salary</span>
-                    <span class="fw-bold text-success" style="font-size: 1.25rem;">₹{{latest_payroll.gross_salary|floatformat:2}}</span>
+                    <span class="fw-bold text-success"
+                        style="font-size: 1.25rem;">₹{{latest_payroll.gross_salary|floatformat:2}}</span>
                 </div>
             </div>
         </div>
@@ -80,7 +87,8 @@
                 <div class="d-flex justify-between"
                     style="padding-top: var(--spacing-md); border-top: 2px solid var(--error);">
                     <span class="fw-bold text-error">Total Deductions</span>
-                    <span class="fw-bold text-error" style="font-size: 1.25rem;">₹{{latest_payroll.total_deductions|floatformat:2}}</span>
+                    <span class="fw-bold text-error"
+                        style="font-size: 1.25rem;">₹{{latest_payroll.total_deductions|floatformat:2}}</span>
                 </div>
             </div>
         </div>

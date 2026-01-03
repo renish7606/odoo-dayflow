@@ -1,11 +1,11 @@
-{% extends 'hrms/base.html' %}
+﻿{% extends 'hrms/base.html' %}
 {% load static %}
 
 {% block title %}Payroll - Dayflow HRMS{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 800px;">
-    <h1 class="mb-4">💰 My Payroll</h1>
+    <h1 class="mb-4"> My Payroll</h1>
 
     {% if latest_payroll %}
     <div class="card card-gradient mb-4 animate-fadeIn">
@@ -23,34 +23,33 @@
         <!-- Earnings -->
         <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
             <div class="card-header">
-                <h3 class="card-title">✅ Earnings</h3>
+                <h3 class="card-title"> Earnings</h3>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Basic Salary</span>
-                    <span class="fw-bold">₹{{ latest_payroll.basic_salary|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.basic_salary|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">HRA</span>
-                    <span class="fw-bold">₹{{ latest_payroll.house_rent_allowance|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.house_rent_allowance|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Transport Allowance</span>
-                    <span class="fw-bold">₹{{ latest_payroll.transport_allowance|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.transport_allowance|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Medical Allowance</span>
-                    <span class="fw-bold">₹{{ latest_payroll.medical_allowance|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.medical_allowance|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Other Allowances</span>
-                    <span class="fw-bold">₹{{ latest_payroll.other_allowances|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.other_allowances|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between"
                     style="padding-top: var(--spacing-md); border-top: 2px solid var(--success);">
                     <span class="fw-bold text-success">Gross Salary</span>
-                    <span class="fw-bold text-success" style="font-size: 1.25rem;">₹{{
-                        latest_payroll.gross_salary|floatformat:2 }}</span>
+                    <span class="fw-bold text-success" style="font-size: 1.25rem;">₹{{latest_payroll.gross_salary|floatformat:2}}</span>
                 </div>
             </div>
         </div>
@@ -58,31 +57,30 @@
         <!-- Deductions -->
         <div class="card animate-fadeIn" style="animation-delay: 0.2s;">
             <div class="card-header">
-                <h3 class="card-title">⚠️ Deductions</h3>
+                <h3 class="card-title"> Deductions</h3>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Provident Fund</span>
-                    <span class="fw-bold">₹{{ latest_payroll.provident_fund|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.provident_fund|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Professional Tax</span>
-                    <span class="fw-bold">₹{{ latest_payroll.professional_tax|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.professional_tax|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Income Tax</span>
-                    <span class="fw-bold">₹{{ latest_payroll.income_tax|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.income_tax|floatformat:2}}</span>
                 </div>
                 <div class="d-flex justify-between mb-3">
                     <span class="text-gray">Other Deductions</span>
-                    <span class="fw-bold">₹{{ latest_payroll.other_deductions|floatformat:2 }}</span>
+                    <span class="fw-bold">₹{{latest_payroll.other_deductions|floatformat:2}}</span>
                 </div>
                 <div style="margin-bottom: 3.85rem;"></div>
                 <div class="d-flex justify-between"
                     style="padding-top: var(--spacing-md); border-top: 2px solid var(--error);">
                     <span class="fw-bold text-error">Total Deductions</span>
-                    <span class="fw-bold text-error" style="font-size: 1.25rem;">₹{{
-                        latest_payroll.total_deductions|floatformat:2 }}</span>
+                    <span class="fw-bold text-error" style="font-size: 1.25rem;">₹{{latest_payroll.total_deductions|floatformat:2}}</span>
                 </div>
             </div>
         </div>
@@ -122,7 +120,7 @@
     {% else %}
     <div class="card text-center animate-fadeIn">
         <div class="card-body" style="padding: var(--spacing-2xl);">
-            <div style="font-size: 4rem; margin-bottom: var(--spacing-md);">💼</div>
+            <div style="font-size: 4rem; margin-bottom: var(--spacing-md);"></div>
             <h3>No Payroll Information</h3>
             <p class="text-gray">Your salary details have not been configured yet. Please contact HR.</p>
         </div>

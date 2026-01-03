@@ -1,11 +1,11 @@
-{% extends 'hrms/base.html' %}
+﻿{% extends 'hrms/base.html' %}
 {% load static %}
 
 {% block title %}Salary Management - Dayflow HRMS{% endblock %}
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">💰 Salary Management</h1>
+    <h1 class="mb-4"> Salary Management</h1>
 
     <!-- Employee Filter -->
     <div class="card mb-4 animate-fadeIn">
@@ -14,7 +14,7 @@
                 <select name="employee" class="form-select" style="flex: 1;">
                     <option value="">All Employees</option>
                     {% for emp in employees %}
-                    <option value="{{ emp.id }}" {% if selected_employee==emp.id|stringformat:"s" %}selected{% endif %}>
+                    <option value="{{ emp.id }}" {% if selected_employee|stringformat:"s" == emp.id|stringformat:"s" %}selected{% endif %}>
                         {{ emp.employee_id }} - {{ emp.get_full_name }}
                     </option>
                     {% endfor %}
@@ -57,7 +57,7 @@
                 {% empty %}
                 <tr>
                     <td colspan="7" class="text-center text-gray" style="padding: var(--spacing-2xl);">
-                        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">💼</div>
+                        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);"></div>
                         <p>No payroll records found</p>
                     </td>
                 </tr>

@@ -570,17 +570,21 @@ def admin_salary_update(request, employee_id):
         # Create new payroll record
         payroll = Payroll.objects.create(
             user=employee,
-            basic_salary=request.POST.get('basic_salary', 0),
-            house_rent_allowance=request.POST.get('hra', 0),
-            transport_allowance=request.POST.get('transport', 0),
-            medical_allowance=request.POST.get('medical', 0),
-            other_allowances=request.POST.get('other_allowances', 0),
-            provident_fund=request.POST.get('pf', 0),
-            professional_tax=request.POST.get('professional_tax', 0),
-            income_tax=request.POST.get('income_tax', 0),
-            other_deductions=request.POST.get('other_deductions', 0),
+            effective_date=effective_date,
+            defaults={
+                'basic_salary': request.POST.get('basic_salary', 0),
+                'house_rent_allowance': request.POST.get('hra', 0),
+                'transport_allowance': request.POST.get('transport', 0),
+                'medical_allowance': request.POST.get('medical', 0),
+                'other_allowances': request.POST.get('other_allowances', 0),
+                'provident_fund': request.POST.get('pf', 0),
+                'professional_tax': request.POST.get('professional_tax', 0),
+                'income_tax': request.POST.get('income_tax', 0),
+                'other_deductions': request.POST.get('other_deductions', 0),
+            }
         )
-        messages.success(request, f'Salary updated for {employee.get_full_name()}')
+        action = 'created' if created else 'updated'
+        messages.success(request, f'Salary {action} for {employee.get_full_name()}')
         return redirect('admin_salary_management')
     
     context = {

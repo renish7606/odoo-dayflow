@@ -8,7 +8,7 @@ import secrets
 class CustomUser(AbstractUser):
     """Custom user model with employee ID and role"""
     ROLE_CHOICES = [
-        ('ADMIN', 'Admin/HR Officer'),
+        #('ADMIN', 'Admin/HR Officer'),
         ('EMPLOYEE', 'Employee'),
     ]
     
@@ -179,7 +179,7 @@ class Payroll(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['-effective_date']
+        ordering = ['-effective_date', '-created_at']
         verbose_name = 'Payroll'
         verbose_name_plural = 'Payroll Records'
     

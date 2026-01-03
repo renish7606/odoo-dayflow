@@ -1,0 +1,72 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Sign In - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 450px; margin-top: var(--spacing-2xl);">
+    <div class="card animate-fadeIn">
+        <div class="text-center mb-5">
+            <h1
+                style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: var(--spacing-md);">
+                ⚡ Dayflow
+            </h1>
+            <h2 style="font-size: 1.75rem; color: var(--gray-800); margin-bottom: var(--spacing-sm);">Welcome Back</h2>
+            <p class="text-gray">Sign in to access your dashboard</p>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="id_username" class="form-label">Username or Email</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <div class="form-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password" class="form-label">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                <div class="form-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">
+                Sign In
+            </button>
+        </form>
+
+        <div class="text-center mt-4" style="padding-top: var(--spacing-md); border-top: 1px solid var(--gray-200);">
+            <p class="text-gray">
+                Don't have an account?
+                <a href="{% url 'signup' %}" style="font-weight: 600;">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="grid grid-3 mt-5" style="gap: var(--spacing-md);">
+        <div class="text-center">
+            <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📊</div>
+            <p class="text-gray" style="font-size: 0.875rem;">Track Attendance</p>
+        </div>
+        <div class="text-center">
+            <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">📅</div>
+            <p class="text-gray" style="font-size: 0.875rem;">Manage Leave</p>
+        </div>
+        <div class="text-center">
+            <div style="font-size: 2rem; margin-bottom: var(--spacing-sm);">💰</div>
+            <p class="text-gray" style="font-size: 0.875rem;">View Payroll</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

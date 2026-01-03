@@ -1,0 +1,76 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Request Leave - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <div class="mb-4">
+        <a href="{% url 'leave_request_list' %}" class="text-primary">&larr; Back to Leave Requests</a>
+    </div>
+
+    <div class="card animate-fadeIn">
+        <div class="card-header">
+            <h2 class="card-title">📅 Request Leave</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_leave_type" class="form-label">Leave Type *</label>
+                    {{ form.leave_type }}
+                    {% if form.leave_type.errors %}
+                    <div class="form-error">{{ form.leave_type.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-2" style="gap: var(--spacing-md);">
+                    <div class="form-group">
+                        <label for="id_start_date" class="form-label">Start Date *</label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                        <div class="form-error">{{ form.start_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_end_date" class="form-label">End Date *</label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}
+                        <div class="form-error">{{ form.end_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div id="leave-days" class="text-primary fw-semibold mb-3"></div>
+
+                <div class="form-group">
+                    <label for="id_remarks" class="form-label">Remarks</label>
+                    {{ form.remarks }}
+                    {% if form.remarks.errors %}
+                    <div class="form-error">{{ form.remarks.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-error">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-3 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Submit Request</button>
+                    <a href="{% url 'leave_request_list' %}" class="btn btn-outline btn-lg">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Calculate leave days
+    document.getElementById('id_start_date').addEventListener('change', calculateLeaveDays);
+    document.getElementById('id_end_date').addEventListener('change', calculateLeaveDays);
+</script>
+{% endblock %}

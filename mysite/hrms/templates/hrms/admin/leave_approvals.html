@@ -1,0 +1,114 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Leave Approvals - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">📅 Leave Request Management</h1>
+
+    <!-- Filter Tabs -->
+    <div class="card mb-4 animate-fadeIn">
+        <div class="card-body">
+            <div class="d-flex gap-3">
+                <a href="?status=PENDING"
+                    class="btn {% if status_filter == 'PENDING' %}btn-warning{% else %}btn-outline{% endif %}">
+                    Pending
+                </a>
+                <a href="?status=APPROVED"
+                    class="btn {% if status_filter == 'APPROVED' %}btn-success{% else %}btn-outline{% endif %}">
+                    Approved
+                </a>
+                <a href="?status=REJECTED"
+                    class="btn {% if status_filter == 'REJECTED' %}btn-danger{% else %}btn-outline{% endif %}">
+                    Rejected
+                </a>
+                <a href="{% url 'admin_leave_approvals' %}" class="btn btn-outline">All</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Requests Table -->
+    <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Leave Type</th>
+                    <th>Dates</th>
+                    <th>Days</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leave_requests %}
+                <tr>
+                    <td class="fw-semibold">{{ leave.user.get_full_name }}</td>
+                    <td>
+                        <span class="badge badge-primary">{{ leave.get_leave_type_display }}</span>
+                    </td>
+                    <td class="text-gray">
+                        {{ leave.start_date|date:"M d" }} - {{ leave.end_date|date:"M d, Y" }}
+                    </td>
+                    <td class="fw-bold">{{ leave.total_days }}</td>
+                    <td>
+                        <span
+                            class="badge badge-{% if leave.status == 'APPROVED' %}success{% elif leave.status == 'REJECTED' %}danger{% else %}warning{% endif %}">
+                            {{ leave.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if leave.status == 'PENDING' %}
+                        <div class="d-flex gap-2">
+                            <form method="post" action="{% url 'admin_leave_action' leave.id 'approve' %}"
+                                style="display: inline;">
+                                {% csrf_token %}
+                                <input type="text" name="comment" placeholder="Comment (optional)" class="form-input"
+                                    style="display: inline-block; width: 200px; padding: 0.5rem;">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    ✓ Approve
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'admin_leave_action' leave.id 'reject' %}"
+                                style="display: inline;">
+                                {% csrf_token %}
+                                <input type="text" name="comment" placeholder="Reason (optional)" class="form-input"
+                                    style="display: inline-block; width: 200px; padding: 0.5rem;">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    ✗ Reject
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <span class="text-gray" style="font-size: 0.875rem;">
+                            Processed by {{ leave.approved_by.get_full_name|default:"Admin" }}
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6" style="background: var(--gray-50); padding: var(--spacing-sm) var(--spacing-md);">
+                        <p class="text-gray" style="font-size: 0.875rem; margin: 0;">
+                            <strong>Remarks:</strong> {{ leave.remarks|default:"No remarks provided" }}
+                        </p>
+                        {% if leave.admin_comment %}
+                        <p class="text-primary" style="font-size: 0.875rem; margin: var(--spacing-xs) 0 0 0;">
+                            <strong>Admin Comment:</strong> {{ leave.admin_comment }}
+                        </p>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-gray" style="padding: var(--spacing-2xl);">
+                        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">📋</div>
+                        <p>No leave requests found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Attendance Records - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">📊 Attendance Records</h1>
+
+    <!-- Date Filter -->
+    <div class="card mb-4 animate-fadeIn">
+        <div class="card-body">
+            <form method="get" class="grid grid-3" style="gap: var(--spacing-md); align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label for="date_from" class="form-label">From Date</label>
+                    <input type="date" name="date_from" value="{{ date_from }}" class="form-input">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label for="date_to" class="form-label">To Date</label>
+                    <input type="date" name="date_to" value="{{ date_to }}" class="form-input">
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'admin_attendance_records' %}" class="btn btn-outline">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Total Hours</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in attendance_records %}
+                <tr>
+                    <td class="fw-semibold">{{ attendance.user.get_full_name }}</td>
+                    <td>{{ attendance.date|date:"D, M d, Y" }}</td>
+                    <td>
+                        {% if attendance.check_in_time %}
+                        <span class="text-success">{{ attendance.check_in_time|date:"h:i A" }}</span>
+                        {% else %}
+                        <span class="text-gray">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if attendance.check_out_time %}
+                        <span class="text-error">{{ attendance.check_out_time|date:"h:i A" }}</span>
+                        {% else %}
+                        <span class="text-gray">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold">{{ attendance.total_hours|default:"-" }}</td>
+                    <td>
+                        <span
+                            class="badge badge-{% if attendance.status == 'PRESENT' %}success{% elif attendance.status == 'HALF_DAY' %}warning{% else %}danger{% endif %}">
+                            {{ attendance.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-gray" style="padding: var(--spacing-2xl);">
+                        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">📅</div>
+                        <p>No attendance records found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

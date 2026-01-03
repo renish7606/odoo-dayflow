@@ -1,0 +1,157 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Attendance - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">📊 Attendance Management</h1>
+
+    <div class="grid grid-2 mb-5">
+        <!-- Check-in/Check-out Card -->
+        <div class="card animate-fadeIn">
+            <div class="card-header">
+                <h3 class="card-title">Today's Status</h3>
+            </div>
+            <div class="card-body">
+                <div style="text-align: center; padding: var(--spacing-lg) 0;">
+                    <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">
+                        {% if today_attendance.check_in_time and today_attendance.check_out_time %}
+                        ✅
+                        {% elif today_attendance.check_in_time %}
+                        ⏰
+                        {% else %}
+                        ⚠️
+                        {% endif %}
+                    </div>
+
+                    {% if today_attendance.check_in_time %}
+                    <div class="mb-4">
+                        <p class="text-gray" style="font-size: 0.875rem;">Check-in</p>
+                        <p class="fw-bold" style="font-size: 1.5rem; color: var(--success);">
+                            {{ today_attendance.check_in_time|date:"h:i A" }}
+                        </p>
+                    </div>
+
+                    {% if today_attendance.check_out_time %}
+                    <div class="mb-4">
+                        <p class="text-gray" style="font-size: 0.875rem;">Check-out</p>
+                        <p class="fw-bold" style="font-size: 1.5rem; color: var(--error);">
+                            {{ today_attendance.check_out_time|date:"h:i A" }}
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-gray" style="font-size: 0.875rem;">Total Hours</p>
+                        <p class="fw-bold" style="font-size: 2rem; color: var(--primary-600);">
+                            {{ today_attendance.total_hours }} hrs
+                        </p>
+                    </div>
+                    {% else %}
+                    <p class="text-warning mb-4">Currently working...</p>
+                    <form id="checkout-form" method="post" action="{% url 'attendance_checkout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            Check Out
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-gray mb-4">You haven't checked in today</p>
+                    <form id="checkin-form" method="post" action="{% url 'attendance_checkin' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg">
+                            Check In
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Time Card -->
+        <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <h3 class="card-title">Current Time</h3>
+            </div>
+            <div class="card-body">
+                <div style="text-align: center; padding: var(--spacing-xl) 0;">
+                    <div id="current-time"
+                        style="font-size: 3rem; font-weight: 700; color: var(--primary-600); font-family: var(--font-headings);">
+                    </div>
+                    <p class="text-gray mt-2">{{ today.attendance.date|date:"l, F d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Attendance -->
+    <div class="card animate-fadeIn" style="animation-delay: 0.2s;">
+        <div class="card-header">
+            <h3 class="card-title">This Week's Attendance</h3>
+            <p class="text-gray" style="font-size: 0.875rem; margin: 0;">
+                {{ week_start|date:"M d" }} - {{ week_end|date:"M d, Y" }}
+            </p>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Total Hours</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in weekly_attendance %}
+                    <tr>
+                        <td class="fw-semibold">{{ attendance.date|date:"D, M d" }}</td>
+                        <td>
+                            {% if attendance.check_in_time %}
+                            <span class="text-success">{{ attendance.check_in_time|date:"h:i A" }}</span>
+                            {% else %}
+                            <span class="text-gray">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if attendance.check_out_time %}
+                            <span class="text-error">{{ attendance.check_out_time|date:"h:i A" }}</span>
+                            {% else %}
+                            <span class="text-gray">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-semibold">{{ attendance.total_hours|default:"-" }}</td>
+                        <td>
+                            <span
+                                class="badge badge-{% if attendance.status == 'PRESENT' %}success{% elif attendance.status == 'HALF_DAY' %}warning{% else %}danger{% endif %}">
+                                {{ attendance.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-gray">No attendance records this week</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        document.getElementById('current-time').textContent = timeString;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Payroll - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <h1 class="mb-4">💰 My Payroll</h1>
+
+    {% if latest_payroll %}
+    <div class="card card-gradient mb-4 animate-fadeIn">
+        <div class="text-center">
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.875rem; margin-bottom: var(--spacing-sm);">Current Net
+                Salary</p>
+            <h2 style="color: white; font-size: 3rem; margin: 0;">₹{{ latest_payroll.net_salary|floatformat:0 }}</h2>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.875rem; margin-top: var(--spacing-sm);">
+                Effective from {{ latest_payroll.effective_date|date:"F d, Y" }}
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-2 mb-4">
+        <!-- Earnings -->
+        <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <h3 class="card-title">✅ Earnings</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Basic Salary</span>
+                    <span class="fw-bold">₹{{ latest_payroll.basic_salary|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">HRA</span>
+                    <span class="fw-bold">₹{{ latest_payroll.house_rent_allowance|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Transport Allowance</span>
+                    <span class="fw-bold">₹{{ latest_payroll.transport_allowance|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Medical Allowance</span>
+                    <span class="fw-bold">₹{{ latest_payroll.medical_allowance|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Other Allowances</span>
+                    <span class="fw-bold">₹{{ latest_payroll.other_allowances|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between"
+                    style="padding-top: var(--spacing-md); border-top: 2px solid var(--success);">
+                    <span class="fw-bold text-success">Gross Salary</span>
+                    <span class="fw-bold text-success" style="font-size: 1.25rem;">₹{{
+                        latest_payroll.gross_salary|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deductions -->
+        <div class="card animate-fadeIn" style="animation-delay: 0.2s;">
+            <div class="card-header">
+                <h3 class="card-title">⚠️ Deductions</h3>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Provident Fund</span>
+                    <span class="fw-bold">₹{{ latest_payroll.provident_fund|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Professional Tax</span>
+                    <span class="fw-bold">₹{{ latest_payroll.professional_tax|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Income Tax</span>
+                    <span class="fw-bold">₹{{ latest_payroll.income_tax|floatformat:2 }}</span>
+                </div>
+                <div class="d-flex justify-between mb-3">
+                    <span class="text-gray">Other Deductions</span>
+                    <span class="fw-bold">₹{{ latest_payroll.other_deductions|floatformat:2 }}</span>
+                </div>
+                <div style="margin-bottom: 3.85rem;"></div>
+                <div class="d-flex justify-between"
+                    style="padding-top: var(--spacing-md); border-top: 2px solid var(--error);">
+                    <span class="fw-bold text-error">Total Deductions</span>
+                    <span class="fw-bold text-error" style="font-size: 1.25rem;">₹{{
+                        latest_payroll.total_deductions|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payroll History -->
+    {% if payrolls.count > 1 %}
+    <div class="card animate-fadeIn" style="animation-delay: 0.3s;">
+        <div class="card-header">
+            <h3 class="card-title">Salary History</h3>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Effective From</th>
+                    <th>Basic Salary</th>
+                    <th>Gross Salary</th>
+                    <th>Deductions</th>
+                    <th>Net Salary</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payroll in payrolls %}
+                <tr>
+                    <td>{{ payroll.effective_date|date:"M d, Y" }}</td>
+                    <td>₹{{ payroll.basic_salary|floatformat:0 }}</td>
+                    <td>₹{{ payroll.gross_salary|floatformat:0 }}</td>
+                    <td>₹{{ payroll.total_deductions|floatformat:0 }}</td>
+                    <td class="fw-bold">₹{{ payroll.net_salary|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card text-center animate-fadeIn">
+        <div class="card-body" style="padding: var(--spacing-2xl);">
+            <div style="font-size: 4rem; margin-bottom: var(--spacing-md);">💼</div>
+            <h3>No Payroll Information</h3>
+            <p class="text-gray">Your salary details have not been configured yet. Please contact HR.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

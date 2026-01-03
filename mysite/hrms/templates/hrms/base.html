@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dayflow HRMS{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'hrms/css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    {% if user.is_authenticated %}
+    <nav class="navbar">
+        <div class="container navbar-container">
+            <a href="{% if user.role == 'ADMIN' %}{% url 'admin_dashboard' %}{% else %}{% url 'employee_dashboard' %}{% endif %}" class="navbar-brand">
+                ⚡ Dayflow
+            </a>
+            
+            <ul class="navbar-menu">
+                {% if user.role == 'EMPLOYEE' %}
+                    <li><a href="{% url 'employee_dashboard' %}" class="navbar-link">Dashboard</a></li>
+                    <li><a href="{% url 'employee_profile' %}" class="navbar-link">Profile</a></li>
+                    <li><a href="{% url 'attendance_view' %}" class="navbar-link">Attendance</a></li>
+                    <li><a href="{% url 'leave_request_list' %}" class="navbar-link">Leave</a></li>
+                    <li><a href="{% url 'payroll_view' %}" class="navbar-link">Payroll</a></li>
+                {% elif user.role == 'ADMIN' %}
+                    <li><a href="{% url 'admin_dashboard' %}" class="navbar-link">Dashboard</a></li>
+                    <li><a href="{% url 'admin_employee_list' %}" class="navbar-link">Employees</a></li>
+                    <li><a href="{% url 'admin_attendance_records' %}" class="navbar-link">Attendance</a></li>
+                    <li><a href="{% url 'admin_leave_approvals' %}" class="navbar-link">Leave Requests</a></li>
+                    <li><a href="{% url 'admin_salary_management' %}" class="navbar-link">Payroll</a></li>
+                {% endif %}
+                
+                <li style="margin-left: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="text-gray" style="font-size: 0.875rem;">
+                            {{ user.get_full_name }} 
+                            <span class="badge badge-primary">{{ user.get_role_display }}</span>
+                        </span>
+                        <a href="{% url 'signout' %}" class="btn btn-sm btn-outline">Sign Out</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <!-- Messages/Alerts -->
+    {% if messages %}
+    <div class="container" style="margin-top: var(--spacing-lg);">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} animate-fadeIn">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main style="min-height: calc(100vh - 200px); padding: var(--spacing-xl) 0;">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer style="background: white; padding: var(--spacing-xl) 0; margin-top: var(--spacing-2xl); box-shadow: var(--shadow-md);">
+        <div class="container text-center">
+            <p style="color: var(--gray-600); margin: 0;">
+                &copy; 2026 Dayflow HRMS. All rights reserved.
+            </p>
+            <p style="color: var(--gray-500); font-size: 0.875rem; margin-top: var(--spacing-sm);">
+                Empowering Human Resources Management
+            </p>
+        </div>
+    </footer>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% static 'hrms/js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

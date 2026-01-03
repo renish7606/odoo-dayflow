@@ -1,0 +1,93 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}My Profile - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">👤 My Profile</h1>
+
+    <div class="grid grid-2">
+        <!-- Profile Information -->
+        <div class="card animate-fadeIn">
+            <div class="card-header">
+                <h3 class="card-title">Personal Information</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="form-error">{{ field.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary btn-block mt-4">
+                        Update Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job Details (Read-only) -->
+        <div>
+            <div class="card animate-fadeIn" style="animation-delay: 0.1s; margin-bottom: var(--spacing-lg);">
+                <div class="card-header">
+                    <h3 class="card-title">Job Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="text-gray" style="font-size: 0.875rem;">Employee ID</p>
+                        <p class="fw-bold">{{ user.employee_id }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-gray" style="font-size: 0.875rem;">Designation</p>
+                        <p class="fw-bold">{{ profile.designation }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-gray" style="font-size: 0.875rem;">Department</p>
+                        <p class="fw-bold">{{ profile.department }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-gray" style="font-size: 0.875rem;">Employment Type</p>
+                        <p class="fw-bold">{{ profile.get_employment_type_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray" style="font-size: 0.875rem;">Joined On</p>
+                        <p class="fw-bold">{{ profile.date_of_joining|date:"F d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Salary Information (Read-only) -->
+            {% if latest_payroll %}
+            <div class="card animate-fadeIn" style="animation-delay: 0.2s;">
+                <div class="card-header">
+                    <h3 class="card-title">Salary Structure</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="text-gray" style="font-size: 0.875rem;">Basic Salary</p>
+                        <p class="fw-bold">₹{{ latest_payroll.basic_salary|floatformat:2 }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-gray" style="font-size: 0.875rem;">Gross Salary</p>
+                        <p class="fw-bold text-success">₹{{ latest_payroll.gross_salary|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray" style="font-size: 0.875rem;">Net Salary</p>
+                        <p class="fw-bold text-primary" style="font-size: 1.5rem;">₹{{
+                            latest_payroll.net_salary|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

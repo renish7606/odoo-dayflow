@@ -1,0 +1,75 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Employee Management - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-between items-center mb-4">
+        <h1>👥 Employee Management</h1>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="card mb-4 animate-fadeIn">
+        <div class="card-body">
+            <form method="get">
+                <div class="d-flex gap-3">
+                    <input type="text" name="search" value="{{ search_query }}" class="form-input"
+                        placeholder="Search by ID, name, or email..." style="flex: 1;">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search_query %}
+                    <a href="{% url 'admin_employee_list' %}" class="btn btn-outline">Clear</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employee List -->
+    <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td class="fw-bold text-primary">{{ employee.employee_id }}</td>
+                    <td class="fw-semibold">{{ employee.get_full_name }}</td>
+                    <td>{{ employee.profile.department }}</td>
+                    <td>{{ employee.profile.designation }}</td>
+                    <td class="text-gray">{{ employee.email }}</td>
+                    <td>
+                        {% if employee.is_active %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_employee_edit' employee.id %}" class="btn btn-sm btn-outline">
+                            Edit
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-gray" style="padding: var(--spacing-2xl);">
+                        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">🔍</div>
+                        <p>No employees found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

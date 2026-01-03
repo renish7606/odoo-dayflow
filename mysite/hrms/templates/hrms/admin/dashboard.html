@@ -1,0 +1,144 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Header -->
+    <div class="card card-gradient mb-5 animate-fadeIn">
+        <h1 style="color: white; margin-bottom: var(--spacing-sm);">
+            Admin Dashboard 🎯
+        </h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 0;">
+            Manage employees, attendance, and leave requests
+        </p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-4 mb-5">
+        <div class="quick-card animate-fadeIn">
+            <div class="quick-card-icon">👥</div>
+            <div class="quick-card-title">Total Employees</div>
+            <div class="quick-card-value">{{ total_employees }}</div>
+        </div>
+
+        <div class="quick-card animate-fadeIn" style="animation-delay: 0.1s; border-left-color: var(--success);">
+            <div class="quick-card-icon" style="background: var(--gradient-success);">✅</div>
+            <div class="quick-card-title">Present Today</div>
+            <div class="quick-card-value">{{ present_today }}</div>
+        </div>
+
+        <div class="quick-card animate-fadeIn" style="animation-delay: 0.2s; border-left-color: var(--warning);">
+            <div class="quick-card-icon" style="background: var(--gradient-warning);">⏳</div>
+            <div class="quick-card-title">Pending Leaves</div>
+            <div class="quick-card-value">{{ pending_leaves }}</div>
+        </div>
+
+        <div class="quick-card animate-fadeIn" style="animation-delay: 0.3s; border-left-color: var(--error);">
+            <div class="quick-card-icon" style="background: var(--gradient-dark);">❌</div>
+            <div class="quick-card-title">Absent Today</div>
+            <div class="quick-card-value">{{ total_employees|add:"-"|add:present_today }}</div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-2">
+        <!-- Today's Attendance Summary -->
+        <div class="card animate-fadeIn" style="animation-delay: 0.4s;">
+            <div class="card-header">
+                <h3 class="card-title">Today's Attendance</h3>
+            </div>
+            <div class="card-body">
+                {% if today_attendance %}
+                <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Check-in</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance in today_attendance|slice:":5" %}
+                        <tr>
+                            <td class="fw-semibold">{{ attendance.user.get_full_name }}</td>
+                            <td>{{ attendance.check_in_time|date:"h:i A"|default:"-" }}</td>
+                            <td>
+                                <span
+                                    class="badge badge-{% if attendance.status == 'PRESENT' %}success{% else %}warning{% endif %}">
+                                    {{ attendance.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="{% url 'admin_attendance_records' %}" class="btn btn-outline btn-sm mt-3">View All</a>
+                {% else %}
+                <p class="text-gray">No attendance records for today</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pending Leave Requests -->
+        <div class="card animate-fadeIn" style="animation-delay: 0.5s;">
+            <div class="card-header">
+                <div class="d-flex justify-between items-center">
+                    <h3 class="card-title">Pending Leave Approvals</h3>
+                    <span class="badge badge-warning">{{ pending_leaves }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_leave_requests %}
+                {% for leave in recent_leave_requests|slice:":5" %}
+                {% if leave.status == 'PENDING' %}
+                <div
+                    style="padding: var(--spacing-md); background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: var(--spacing-md);">
+                    <div class="d-flex justify-between items-center mb-2">
+                        <span class="fw-semibold">{{ leave.user.get_full_name }}</span>
+                        <span class="badge badge-primary">{{ leave.get_leave_type_display }}</span>
+                    </div>
+                    <p class="text-gray" style="font-size: 0.875rem; margin: 0 0 var(--spacing-sm) 0;">
+                        {{ leave.start_date|date:"M d" }} - {{ leave.end_date|date:"M d, Y" }} ({{ leave.total_days }}
+                        days)
+                    </p>
+                    <a href="{% url 'admin_leave_approvals' %}" class="text-primary"
+                        style="font-size: 0.875rem; font-weight: 500;">
+                        Review &rarr;
+                    </a>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <a href="{% url 'admin_leave_approvals' %}" class="btn btn-outline btn-sm mt-3">View All Requests</a>
+                {% else %}
+                <p class="text-gray">No pending leave requests</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mt-5 animate-fadeIn" style="animation-delay: 0.6s;">
+        <div class="card-header">
+            <h3 class="card-title">Quick Actions</h3>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-3" style="flex-wrap: wrap;">
+                <a href="{% url 'admin_employee_list' %}" class="btn btn-primary">
+                    👥 Manage Employees
+                </a>
+                <a href="{% url 'admin_attendance_records' %}" class="btn btn-success">
+                    📊 View Attendance
+                </a>
+                <a href="{% url 'admin_leave_approvals' %}" class="btn btn-warning">
+                    📅 Approve Leaves
+                </a>
+                <a href="{% url 'admin_salary_management' %}" class="btn btn-outline">
+                    💰 Manage Salaries
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

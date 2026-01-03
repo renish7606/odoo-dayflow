@@ -1,0 +1,69 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Salary Management - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">💰 Salary Management</h1>
+
+    <!-- Employee Filter -->
+    <div class="card mb-4 animate-fadeIn">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-3">
+                <select name="employee" class="form-select" style="flex: 1;">
+                    <option value="">All Employees</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" {% if selected_employee==emp.id|stringformat:"s" %}selected{% endif %}>
+                        {{ emp.employee_id }} - {{ emp.get_full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'admin_salary_management' %}" class="btn btn-outline">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payroll Table -->
+    <div class="card animate-fadeIn" style="animation-delay: 0.1s;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Basic Salary</th>
+                    <th>Gross Salary</th>
+                    <th>Deductions</th>
+                    <th>Net Salary</th>
+                    <th>Effective From</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payroll in payrolls %}
+                <tr>
+                    <td class="fw-semibold">{{ payroll.user.get_full_name }}</td>
+                    <td>₹{{ payroll.basic_salary|floatformat:0 }}</td>
+                    <td class="text-success">₹{{ payroll.gross_salary|floatformat:0 }}</td>
+                    <td class="text-error">₹{{ payroll.total_deductions|floatformat:0 }}</td>
+                    <td class="fw-bold text-primary">₹{{ payroll.net_salary|floatformat:0 }}</td>
+                    <td class="text-gray">{{ payroll.effective_date|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'admin_salary_update' payroll.user.id %}" class="btn btn-sm btn-outline">
+                            Update
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-gray" style="padding: var(--spacing-2xl);">
+                        <div style="font-size: 3rem; margin-bottom: var(--spacing-md);">💼</div>
+                        <p>No payroll records found</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'hrms/base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - Dayflow HRMS{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin-top: var(--spacing-2xl);">
+    <div class="card animate-fadeIn">
+        <div class="text-center mb-4">
+            <h1
+                style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                ⚡ Dayflow
+            </h1>
+            <h2 style="font-size: 1.5rem; color: var(--gray-800);">Create Your Account</h2>
+            <p class="text-gray">Join the Dayflow HRMS platform</p>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <!-- Employee ID -->
+            <div class="form-group">
+                <label for="id_employee_id" class="form-label">Employee ID *</label>
+                {{ form.employee_id }}
+                {% if form.employee_id.errors %}
+                <div class="form-error">{{ form.employee_id.errors.0 }}</div>
+                {% endif %}
+                {% if form.employee_id.help_text %}
+                <div class="form-help">{{ form.employee_id.help_text }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Name -->
+            <div class="grid grid-2" style="gap: var(--spacing-md);">
+                <div class="form-group">
+                    <label for="id_first_name" class="form-label">First Name *</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                    <div class="form-error">{{ form.first_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_last_name" class="form-label">Last Name *</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                    <div class="form-error">{{ form.last_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="id_email" class="form-label">Email Address *</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div class="form-error">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Username -->
+            <div class="form-group">
+                <label for="id_username" class="form-label">Username *</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                <div class="form-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Role -->
+            <div class="form-group">
+                <label for="id_role" class="form-label">Role *</label>
+                {{ form.role }}
+                {% if form.role.errors %}
+                <div class="form-error">{{ form.role.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="id_password1" class="form-label">Password *</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                <div class="form-error">{{ form.password1.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password2" class="form-label">Confirm Password *</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                <div class="form-error">{{ form.password2.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">
+                Create Account
+            </button>
+        </form>
+
+        <div class="text-center mt-4" style="padding-top: var(--spacing-md); border-top: 1px solid var(--gray-200);">
+            <p class="text-gray">
+                Already have an account?
+                <a href="{% url 'signin' %}" style="font-weight: 600;">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

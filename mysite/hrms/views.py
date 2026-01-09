@@ -36,12 +36,39 @@ def signup_view(request):
             user = form.save(commit=False)
             user.is_active = True  # User can login, but email not verified
             user.save()
+<<<<<<< HEAD
             
             # Generate verification token
             token = user.generate_verification_token()
             
             # Note: Profile and Payroll are automatically created by signals.py
             
+=======
+
+            # Create Profile safely (avoid UNIQUE constraint error)
+            profile, created = Profile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'designation': 'Not Assigned',
+                    'department': 'Not Assigned',
+                }
+            )
+
+            # Create Payroll safely
+            payroll, created = Payroll.objects.get_or_create(
+                user=user,
+                defaults={'basic_salary': 0.0}
+            )
+
+            # Generate email verification token
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            current_site = get_current_site(request)
+
+            # Build verification URL
+            verification_url = f"http://{current_site.domain}{reverse('activate', kwargs={'uidb64': uid, 'token': token})}"
+
+>>>>>>> c00c069c04bd4eafb92f9444538f33583a738dea
             # Send verification email
             verification_url = request.build_absolute_uri(
                 reverse('verify_email', kwargs={'token': token})
@@ -460,12 +487,8 @@ def admin_salary_update(request, employee_id):
     latest_payroll = Payroll.objects.filter(user=employee).first()
     
     if request.method == 'POST':
-        # Get effective date from POST or use today
-        from django.utils import timezone
-        effective_date = request.POST.get('effective_date', timezone.now().date())
-        
-        # Update existing payroll record with same effective date, or create new one
-        payroll, created = Payroll.objects.update_or_create(
+        # Create new payroll record
+        payroll = Payroll.objects.create(
             user=employee,
             effective_date=effective_date,
             defaults={

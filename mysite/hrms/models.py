@@ -8,7 +8,7 @@ import secrets
 class CustomUser(AbstractUser):
     """Custom user model with employee ID and role"""
     ROLE_CHOICES = [
-        ('ADMIN', 'Admin/HR Officer'),
+        #('ADMIN', 'Admin/HR Officer'),
         ('EMPLOYEE', 'Employee'),
     ]
     

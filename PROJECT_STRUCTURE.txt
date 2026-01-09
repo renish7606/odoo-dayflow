@@ -1,111 +1,3 @@
-<div align="center">
-
-![DayFlow](https://img.shields.io/badge/DayFlow-HRMS-blueviolet?style=for-the-badge)
-![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django)
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python)
-![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
-
-**A modern, robust Human Resource Management System for seamless attendance, payroll, and employee management.**
-
-[Core Highlights](#-core-highlights) • [Tech Stack](#-tech-stack) • [Installation](#-installation-&-setup) • [Project Structure](#-project-structure-overview)
-
-</div>
-
----
-
-## 🚀 Core Highlights
-
-DayFlow is designed with a role-based architecture, offering distinct functionalities for Employees and Administrators to streamline HR operations.
-
-### 👨‍💼 For Employees
-- **Dashboard**: A personalized hub showing attendance status, leave summary, and quick stats.
-- **Smart Attendance**:
-  - One-click **Check-In** and **Check-Out**.
-  - Real-time work hours tracking.
-  - Weekly attendance history.
-- **Leave Management**:
-  - Easy leave application process.
-  - Track status (Pending, Approved, Rejected).
-- **Payroll Access**:
-  - View detailed salary slips (Basic, Allowances, Deductions).
-  - Download PDF Salary Slips.
-- **Profile**: Manage personal information.
-
-### 🛡️ For Admin / HR
-- **Executive Dashboard**: Real-time overview of workforce attendance and leave requests.
-- **Workforce Management**:
-  - Centralized employee directory.
-  - Role assignment and profile edits.
-- **Attendance Monitoring**:
-  - Global view of employee check-ins/outs.
-  - Filter by date for reporting.
-- **Payroll Administration**:
-  - Define and update salary structures.
-  - Manage bonuses, deductions, and tax calculations.
-  - Generate payslips.
-
----
-
-## 🛠️ Tech Stack
-
-- **Backend Framework**: Django 5.x (Python)
-- **Database**: SQLite (Dev) / MySQL Compatible
-- **Frontend**: HTML5, CSS3 (Custom Design), JavaScript
-- **Templating**: Django Template Engine
-- **Auth**: Django Authentication System
-- **PDF Generation**: ReportLab
-
----
-
-## 📦 Installation & Setup
-
-### Prerequisites
-- Python 3.10+
-- `pip`
-
-### 1. Clone & Setup
-```bash
-git clone https://github.com/yourusername/dayflow-hrms.git
-cd dayflow-hrms
-
-# Create Virtual Environment
-python -m venv venv
-# Activate: venv\Scripts\activate (Windows) or source venv/bin/activate (Mac/Linux)
-```
-
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Environment Config (.env)
-Create `mysite/.env` file:
-```env
-SECRET_KEY=your-secret-key
-DEBUG=True
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password
-```
-
-### 4. Database Setup
-```bash
-cd mysite
-python manage.py makemigrations
-python manage.py migrate
-```
-
-### 5. Create Admin & Run
-```bash
-python manage.py createsuperuser
-python manage.py runserver
-```
-Access at: **http://127.0.0.1:8000/**
-
----
-
-## � Project Structure Overview
-
-```text
 ODOO-DAYFLOW PROJECT STRUCTURE
 ================================
 
@@ -207,4 +99,41 @@ odoo_hackthon_project/
             │       └── ...              # Other dependencies
             ├── Scripts/                 # Windows executable scripts
             └── pyvenv.cfg
-```
+
+
+KEY FILES DESCRIPTION:
+======================
+
+Configuration Files:
+- requirements.txt          : Python package dependencies
+- manage.py                 : Django project management script
+- mysite/settings.py        : Django project settings (database, apps, middleware, etc.)
+- mysite/urls.py            : Main URL routing configuration
+
+Core Application (core/):
+- Basic Django app structure (minimal implementation)
+
+HRMS Application (hrms/):
+- models.py                : Database models (Employee, Attendance, Leave, Payroll, etc.)
+- views.py                 : View functions for handling HTTP requests
+- urls.py                  : URL patterns for HRMS app
+- forms.py                 : Django forms for data input
+- admin.py                 : Django admin interface configuration
+- signals.py               : Django signals for model events
+
+Templates:
+- base.html                : Base template with common layout
+- auth/                    : Authentication pages (login, signup)
+- admin/                   : Admin dashboard and management pages
+- employee/                : Employee portal pages
+
+Static Files:
+- css/style.css            : Custom stylesheet
+- js/main.js               : Custom JavaScript
+
+Media Files:
+- profiles/                : User-uploaded profile images
+
+Database:
+- db.sqlite3               : SQLite database file
+
